@@ -151,6 +151,26 @@
   var currentPassword = "";
   var cachedRecords = [];
 
+  // 將任何格式的日期（包括 GMT 時間文字）轉換為純數字 YYYY-MM-DD
+  function formatDateToNumeric(val) {
+    if (!val) return '';
+    var str = String(val).trim();
+    
+    // 如果本來就是 2026-10-28 格式，直接回傳
+    if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+      return str;
+    }
+    
+    var d = new Date(str);
+    if (!isNaN(d.getTime())) {
+      var year = d.getFullYear();
+      var month = String(d.getMonth() + 1).padStart(2, '0');
+      var day = String(d.getDate()).padStart(2, '0');
+      return year + '-' + month + '-' + day;
+    }
+    return str;
+  }
+
   window.addEventListener('DOMContentLoaded', function() {
     resetForm();
     updateAuthUI();
@@ -207,7 +227,11 @@
       .then(function(res) {
         loading.style.display = 'none';
         if (res.status === 'success') {
-          cachedRecords = res.data;
+          // 在接收時統一將日期轉為純數字 YYYY-MM-DD
+          cachedRecords = (res.data || []).map(function(item) {
+            item.date = formatDateToNumeric(item.date);
+            return item;
+          });
           renderRecords();
         } else {
           alert('讀取失敗：' + res.message);
@@ -241,7 +265,7 @@
     if (!rec) return;
 
     document.getElementById('edit-id').value = rec.id;
-    document.getElementById('srv-date').value = rec.date || '';
+    document.getElementById('srv-date').value = formatDateToNumeric(rec.date);
     document.getElementById('srv-deity').value = rec.deity || '';
     document.getElementById('srv-names').value = rec.names || '';
     document.getElementById('original-image').value = rec.image || '';
@@ -268,7 +292,7 @@
 
     var editId = document.getElementById('edit-id').value;
     var originalImage = document.getElementById('original-image').value;
-    var date = document.getElementById('srv-date').value;
+    var date = formatDateToNumeric(document.getElementById('srv-date').value);
     var deity = document.getElementById('srv-deity').value.trim();
     var names = document.getElementById('srv-names').value.trim();
     var fileInput = document.getElementById('srv-photo');
@@ -419,14 +443,15 @@
     container.innerHTML = '';
 
     var filtered = cachedRecords.filter(function(r) {
+      var displayDate = formatDateToNumeric(r.date);
       var matchKeyword = !keyword || 
         (r.names && r.names.toLowerCase().indexOf(keyword) !== -1) ||
         (r.deity && r.deity.toLowerCase().indexOf(keyword) !== -1) ||
-        (r.date && r.date.indexOf(keyword) !== -1);
+        (displayDate && displayDate.indexOf(keyword) !== -1);
 
       var matchDate = true;
-      if (startDate && r.date < startDate) matchDate = false;
-      if (endDate && r.date > endDate) matchDate = false;
+      if (startDate && displayDate < startDate) matchDate = false;
+      if (endDate && displayDate > endDate) matchDate = false;
 
       return matchKeyword && matchDate;
     });
@@ -464,11 +489,13 @@
           '</div>';
       }
 
+      var formattedDate = formatDateToNumeric(r.date);
+
       card.innerHTML = topHtml +
         '<div class="record-body">' +
           '<div>' +
             '<div style="font-size:0.85rem; color:#718096; margin-bottom:6px; font-weight:600;">' +
-              '📅 ' + r.date + (r.deity ? ' ｜ ' + r.deity : '') +
+              '📅 ' + formattedDate + (r.deity ? ' ｜ ' + r.deity : '') +
             '</div>' +
             '<div style="margin-bottom:8px;">' + nameTags + '</div>' +
           '</div>' +
