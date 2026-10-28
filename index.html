@@ -89,21 +89,21 @@
         <input type="date" id="srv-date">
       </div>
       <div class="form-group">
-        <label for="srv-deity">降駕神尊</label>
-        <input type="text" id="srv-deity" placeholder="例如：天上聖母 / 濟公師父">
+        <label for="srv-deity">神明</label>
+        <input type="text" id="srv-deity">
       </div>
     </div>
     <div class="form-group">
-      <label for="srv-names">信眾姓名與事由（以逗號或空格隔開）</label>
-      <input type="text" id="srv-names" placeholder="例如：林大明(車關)、陳小華(補運)、張阿成(家運)">
+      <label for="srv-names">關鍵字（以逗號或空格隔開）</label>
+      <input type="text" id="srv-names">
     </div>
     <div class="form-group">
-      <label for="srv-photo" id="photo-label">上傳手寫整理照片（支援手機現拍或相簿選擇）</label>
+      <label for="srv-photo" id="photo-label">上傳手寫整理照片</label>
       <input type="file" id="srv-photo" accept="image/*">
     </div>
     
     <div style="display: flex; gap: 10px;">
-      <button type="button" class="btn" id="submit-btn" onclick="saveServiceRecord()">儲存存檔</button>
+      <button type="button" class="btn" id="submit-btn" onclick="saveServiceRecord()">儲存</button>
       <button type="button" class="btn btn-secondary" id="cancel-edit-btn" onclick="cancelEdit()" style="display: none;">取消編輯</button>
     </div>
   </div>
@@ -114,8 +114,8 @@
     
     <div class="filter-panel">
       <div class="form-group" style="margin-bottom: 8px;">
-        <label for="search-keyword">文字關鍵字（姓名、事由、神尊）</label>
-        <input type="text" id="search-keyword" placeholder="輸入關鍵字，例如：林大明、車關..." oninput="renderRecords()">
+        <label for="search-keyword">文字關鍵字</label>
+        <input type="text" id="search-keyword" oninput="renderRecords()">
       </div>
       
       <div class="date-filter-grid">
@@ -187,7 +187,7 @@
         renderRecords();
       }
     } else {
-      var pwd = prompt('請輸入管理員密碼（預設為 8888）：');
+      var pwd = prompt('請輸入管理員密碼');
       if (pwd === null) return;
       if (pwd.trim() === '') {
         alert('密碼不能為空！');
@@ -302,7 +302,7 @@
       return;
     }
     if (!names) {
-      alert('請填入信眾姓名或事由！');
+      alert('請輸入關鍵字！');
       return;
     }
 
