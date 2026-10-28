@@ -189,14 +189,41 @@
     } else {
       var pwd = prompt('請輸入管理員密碼');
       if (pwd === null) return;
-      if (pwd.trim() === '') {
+      var cleanPwd = pwd.trim();
+      if (cleanPwd === '') {
         alert('密碼不能為空！');
         return;
       }
-      currentPassword = pwd.trim();
-      isAdmin = true;
-      updateAuthUI();
-      renderRecords();
+
+      var btnLogin = document.getElementById('btn-login');
+      btnLogin.disabled = true;
+      btnLogin.innerText = '驗證中...';
+
+      // 向 Apps Script 後台發送密碼即時驗證請求
+      fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action: "verify", password: cleanPwd })
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(res) {
+        btnLogin.disabled = false;
+        if (res.status === 'success') {
+          isAdmin = true;
+          currentPassword = cleanPwd;
+          updateAuthUI();
+          renderRecords();
+          alert('驗證成功，已進入管理員模式！');
+        } else {
+          alert('密碼錯誤！無法進入管理員模式。');
+          updateAuthUI();
+        }
+      })
+      .catch(function(err) {
+        btnLogin.disabled = false;
+        updateAuthUI();
+        alert('驗證連線失敗，請檢查網路或稍後再試。');
+      });
     }
   }
 
@@ -227,7 +254,6 @@
       .then(function(res) {
         loading.style.display = 'none';
         if (res.status === 'success') {
-          // 在接收時統一將日期轉為純數字 YYYY-MM-DD
           cachedRecords = (res.data || []).map(function(item) {
             item.date = formatDateToNumeric(item.date);
             return item;
@@ -253,10 +279,10 @@
     
     document.getElementById('form-title').innerText = '新增每週辦事整理紀錄';
     document.getElementById('edit-indicator').style.display = 'none';
-    document.getElementById('submit-btn').innerText = '儲存存檔';
+    document.getElementById('submit-btn').innerText = '儲存';
     document.getElementById('submit-btn').disabled = false;
     document.getElementById('cancel-edit-btn').style.display = 'none';
-    document.getElementById('photo-label').innerText = '上傳手寫整理照片（支援手機現拍或相簿選擇）';
+    document.getElementById('photo-label').innerText = '上傳手寫整理照片';
   }
 
   function editRecord(id) {
@@ -370,7 +396,7 @@
       } else {
         alert('儲存失敗：' + res.message);
         document.getElementById('submit-btn').disabled = false;
-        document.getElementById('submit-btn').innerText = editId ? '更新儲存' : '儲存存檔';
+        document.getElementById('submit-btn').innerText = editId ? '更新儲存' : '儲存';
       }
     })
     .catch(function(err) {
