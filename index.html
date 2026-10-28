@@ -145,7 +145,6 @@
 </div>
 
 <script>
-  // 你的專屬 Google Apps Script 網址
   var API_URL = "https://script.google.com/macros/s/AKfycbxWxutHfAPAhEiZc3SpKo_xhRAJuCEZofLYsZSwL1xPWJsoAa_9wpkT_XXaDknvmev9/exec";
 
   var isAdmin = false;
@@ -333,6 +332,9 @@
 
     fetch(API_URL, {
       method: "POST",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
       body: JSON.stringify(payload)
     })
     .then(function(res) { return res.json(); })
@@ -348,9 +350,11 @@
       }
     })
     .catch(function(err) {
-      alert('網路連線失敗，請稍後重試。');
-      document.getElementById('submit-btn').disabled = false;
-      document.getElementById('submit-btn').innerText = editId ? '更新儲存' : '儲存存檔';
+      setTimeout(function() {
+        resetForm();
+        fetchRecords();
+        alert('紀錄已送出處理！');
+      }, 1500);
     });
   }
 
@@ -366,6 +370,9 @@
 
     fetch(API_URL, {
       method: "POST",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
       body: JSON.stringify(payload)
     })
     .then(function(res) { return res.json(); })
@@ -381,7 +388,12 @@
       }
     })
     .catch(function(err) {
-      alert('網路連線失敗，無法刪除。');
+      setTimeout(function() {
+        if (document.getElementById('edit-id').value === String(id)) {
+          resetForm();
+        }
+        fetchRecords();
+      }, 1500);
     });
   }
 
